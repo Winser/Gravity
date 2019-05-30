@@ -12,10 +12,14 @@ namespace Gravity
 {
     public class Space
     {
-        public static double G = 1;
-        public static double Speed = 1;
-       
-        public double Scale { get; set; } = 1;
+        public static double G = 6.67408E-11;
+
+        public Vector Offset { get; set; }
+
+        public double Scale { get; set; }
+        public double DefaultSpeed { get; set; }
+        public GObject Target { get; private set; }
+
         private List<GObject> GObjects;
 
         public Space()
@@ -26,9 +30,8 @@ namespace Gravity
 
         private void InitializeRealTestObjects()
         {
-            G = 6.67408 * Math.Pow(10, -11);
             Scale = 0.0000005;
-            Speed = 10000;
+            DefaultSpeed = 100000;
 
             GObjects.Add(new GObject()
             {
@@ -38,21 +41,22 @@ namespace Gravity
             });
             GObjects.Add(new GObject()
             {
-                Position = new Vector(374400000, 0),
+                Position = new Vector(362600000, 0),
                 Speed = new Vector(0, 1080),
                 Mass = 7.36 * Math.Pow(10, 22)
             });
 
             GObjects.Add(new GObject()
             {
-                Position = new Vector(-374400000, 0),
+                Position = new Vector(-362600000, 0),
                 Speed = new Vector(0, -1080),
                 Mass = 7.36 * Math.Pow(10, 22)
             });
         }
 
-        public void Update()
+        public void Update(double dTime)
         {
+            dTime = dTime / 1000.0 * DefaultSpeed;
             foreach (GObject gObject1 in GObjects)
             {
                 gObject1.Axel = Vector.Zero;
@@ -65,18 +69,51 @@ namespace Gravity
 
             foreach (GObject gObject1 in GObjects)
             {
-                gObject1.UpdateSpeed();
+                gObject1.UpdateSpeed(dTime);
             }
 
             foreach (GObject gObject in GObjects)
             {
-                gObject.UpdatePosition();
+                gObject.UpdatePosition(dTime);
             }
         }
+
+        public void SetTarget(Vector vector)
+        {
+            GObject gObject = GetObjectOnPos(vector);
+            if (gObject != null)
+            {
+                Target = gObject;
+            }
+        }
+
+        public void MouseMove(Vector pos)
+        {
+            pos += Offset;
+            GObject target = GetObjectOnPos(pos);
+            if (target != null)
+            {
+
+            }
+        }
+
+        private GObject GetObjectOnPos(Vector pos)
+        {
+            pos /= Scale;
+            pos -= Offset;
+            double dist = 5 / Scale;
+            foreach (GObject gObject in GObjects)
+            {
+                if ((gObject.Position - pos).Length < dist)
+                    return gObject;
+            }
+
+            return null;
+        }
+
         public void Draw(Canvas canvas, DrawParams drawParams)
         {
-
-            Vector offset = new Vector()
+            Offset = new Vector()
             {
                 X = (canvas.ActualWidth / 2) / Scale,
                 Y = (canvas.ActualHeight / 2) / Scale
@@ -84,10 +121,21 @@ namespace Gravity
 
             foreach (GObject gObject in GObjects)
             {
-                gObject.Draw(canvas, Scale, drawParams, offset);
+                gObject.Draw(canvas, Scale, drawParams, Offset);
             }
 
             //Центр масс
+            Vector cm = GetCenterMass();
+            cm = (cm + Offset) * Scale;
+            DrawEllipce(canvas, cm, 1, Brushes.Green, null);
+
+            //Цель
+            if (Target != null)
+                DrawEllipce(canvas, (Target.Position + Offset) * Scale, 15, null, Brushes.Red);
+        }
+
+        private Vector GetCenterMass()
+        {
             Vector cm = Vector.Zero;
             double summ_mass = 0;
             foreach (GObject gObject in GObjects)
@@ -95,23 +143,24 @@ namespace Gravity
                 cm += gObject.Position * gObject.Mass;
                 summ_mass += gObject.Mass;
             }
-
             cm /= summ_mass;
+            return cm;
+        }
 
-            cm += offset;
-
+        private static void DrawEllipce(Canvas canvas, Vector pos, double r, Brush fill, Brush stroke)
+        {
             Ellipse point = new Ellipse()
             {
-                Width = 5,
-                Height = 5,
-                Fill = Brushes.Green
+                Width = r,
+                Height = r,
+                Fill = fill,
+                Stroke = stroke,
+                StrokeThickness = 2
             };
-
-            point.SetValue(Canvas.LeftProperty, cm.X * Scale - 5 / 2);
-            point.SetValue(Canvas.TopProperty, cm.Y * Scale - 5 / 2);
+            point.SetValue(Canvas.LeftProperty, pos.X - r / 2);
+            point.SetValue(Canvas.TopProperty, pos.Y - r / 2);
 
             canvas.Children.Add(point);
         }
-
     }
 }

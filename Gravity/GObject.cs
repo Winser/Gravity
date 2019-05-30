@@ -6,7 +6,7 @@ using System.Windows.Shapes;
 
 namespace Gravity
 {
-    internal class GObject
+    public class GObject
     {
         public Vector Position;
         public Vector Speed;
@@ -34,13 +34,13 @@ namespace Gravity
 
             Axel += toTarget.Normalize * axel;
         }
-        public void UpdateSpeed()
+        public void UpdateSpeed(double dTime)
         {
-            Speed += Axel * Space.Speed;
+            Speed += Axel * dTime;
         }
-        public void UpdatePosition()
+        public void UpdatePosition(double dTime)
         {
-            Position += Speed * Space.Speed;
+            Position += Speed * dTime;
         }
         public void Draw(Canvas canvas, double scale, DrawParams drawParams, Vector offset)
         {
@@ -115,5 +115,15 @@ namespace Gravity
             }
         }
 
+        public override string ToString()
+        {
+            String s = "";
+            s += $"Mass = {Mass} kg\n";
+            s += $"Position = {Position.X:N2} : {Position.Y:N2}\n";
+            s += $"Speed = {Speed.Length:N2} m/s\n";
+            s += $"Axel = {Axel.Length} m/s^2\n";
+
+            return s;
+        }
     }
 }

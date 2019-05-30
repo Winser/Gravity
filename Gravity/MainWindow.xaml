@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Gravity"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="1063.305"
+        Title="Graviy" Height="650" Width="1063.305"
         Background="DarkGray">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -19,23 +19,32 @@
             <Canvas Name="Canvas_Space" 
                     Width="800" 
                     Height="600"
-                    Background="Black"/>
+                    Background="Black"
+                    MouseMove="Canvas_Space_MouseMove"/>
 
         </Border>
-        <StackPanel Grid.Column="1"
-                    Margin="4">
-            <StackPanel.Resources>
-                <Style TargetType="CheckBox">
-                    <Setter Property="Margin" Value="0,0,0,4"/>
-                </Style>
-            </StackPanel.Resources>
-            <CheckBox Content="Скорость" Name="CheckBox_Speed" IsChecked="True"/>
-            <CheckBox Content="Ускорение" Name="CheckBox_Axel"/>
-            <TextBlock Text="Скорость симуляции"/>
-            <Slider Name="Slider_Speed" 
-                    Minimum="0" Maximum="2" 
-                    Value="1"
-                    ValueChanged="Slider_Speed_ValueChanged"/>
-        </StackPanel>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="200"/>
+            </Grid.RowDefinitions>
+            <StackPanel Margin="4">
+                <StackPanel.Resources>
+                    <Style TargetType="CheckBox">
+                        <Setter Property="Margin" Value="0,0,0,4"/>
+                    </Style>
+                </StackPanel.Resources>
+                <CheckBox Content="Скорость" Name="CheckBox_Speed" IsChecked="True"/>
+                <CheckBox Content="Ускорение" Name="CheckBox_Axel"/>
+                <TextBlock Text="Скорость симуляции"/>
+                <TextBox Name="TextBox_Speed"
+                         HorizontalAlignment="Left"
+                         Width="110"
+                         TextChanged="TextBox_Speed_TextChanged"/>
+            </StackPanel>
+            <TextBlock Name="TextBox_TargetData"
+                       Grid.Row="1"
+                       TextWrapping="Wrap"/>
+        </Grid>
     </Grid>
 </Window>

@@ -25,15 +25,21 @@ namespace Gravity
         private Timer UpdateTimer;
         private Space space;
         private DrawParams drawParams;
+        private DateTime lastTime;
         public MainWindow()
         {
             InitializeComponent();
             space = new Space();
             drawParams = new DrawParams();
+            CheckBox_Speed.IsChecked = drawParams.DrawSpeed;
+            CheckBox_Axel.IsChecked = drawParams.DrawAxel;
+            TextBox_Speed.Text = space.DefaultSpeed.ToString();
+
             DispatcherTimer dTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(30), DispatcherPriority.Render, RenderTimerTick, this.Dispatcher);
             dTimer.Start();
 
-            UpdateTimer = new Timer(0.0001);
+            lastTime = DateTime.Now;
+            UpdateTimer = new Timer(10);
             UpdateTimer.Elapsed += TimerUpdateTick;
             UpdateTimer.Enabled = true;
         }
@@ -41,7 +47,9 @@ namespace Gravity
         private void TimerUpdateTick(object sender, ElapsedEventArgs e)
         {
             UpdateTimer.Enabled = false;
-            space.Update();
+            DateTime now = DateTime.Now;
+            space.Update((now - lastTime).Milliseconds);
+            lastTime = now;
             UpdateTimer.Enabled = true;
         }
 
@@ -51,11 +59,23 @@ namespace Gravity
             drawParams.DrawAxel = CheckBox_Axel.IsChecked.Value;
             Canvas_Space.Children.Clear();
             space.Draw(Canvas_Space, drawParams);
+            TextBox_TargetData.Text = space.Target?.ToString();
         }
 
-        private void Slider_Speed_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void Canvas_Space_MouseMove(object sender, MouseEventArgs e)
         {
-            Space.Speed = Slider_Speed.Value;
+            space.SetTarget(new Vector(e.GetPosition(Canvas_Space)));
+        }
+
+        private void TextBox_Speed_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            double speed;
+            if (double.TryParse(TextBox_Speed.Text, out speed))
+            {
+                if (speed > 10000000)
+                    speed = 10000000;
+                space.DefaultSpeed = speed;
+            }
         }
     }
 
